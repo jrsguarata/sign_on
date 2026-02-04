@@ -1,0 +1,339 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  SUPER_ADMIN
+  COMPANY_ADMIN
+  COMPANY_OPERATOR
+}
+
+enum ContactStatus {
+  pending
+  contacted
+  converted
+  archived
+}
+
+enum ContactPriority {
+  low
+  normal
+  high
+  urgent
+}
+
+enum InteractionType {
+  email
+  phone
+  meeting
+  note
+}
+
+// ============================================
+// TABELAS PRINCIPAIS
+// ============================================
+
+model Company {
+  id            String    @id @default(uuid())
+  name          String
+  cnpj          String?   @unique
+  email         String?
+  phone         String?
+  address       String?
+  logoUrl       String?   @map("logo_url")
+  active        Boolean   @default(true)
+
+  // Auditoria
+  createdAt     DateTime  @default(now()) @map("created_at")
+  createdBy     String?   @map("created_by")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  updatedBy     String?   @map("updated_by")
+  deactivatedAt DateTime? @map("deactivated_at")
+  deactivatedBy String?   @map("deactivated_by")
+
+  // Relacoes
+  users               User[]
+  companyApplications CompanyApplication[]
+
+  @@map("companies")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  companyId    String?   @map("company_id")
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  fullName     String    @map("full_name")
+  role         UserRole
+  phone        String?
+  avatarUrl    String?   @map("avatar_url")
+  active       Boolean   @default(true)
+  lastLogin    DateTime? @map("last_login")
+
+  // Auditoria
+  createdAt     DateTime  @default(now()) @map("created_at")
+  createdBy     String?   @map("created_by")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  updatedBy     String?   @map("updated_by")
+  deactivatedAt DateTime? @map("deactivated_at")
+  deactivatedBy String?   @map("deactivated_by")
+
+  // Relacoes
+  company              Company?             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  refreshTokens        RefreshToken[]
+  accessLogs           AccessLog[]
+  contactsAssigned     ContactRequest[]     @relation("AssignedContacts")
+  contactInteractions  ContactInteraction[]
+
+  @@map("users")
+}
+
+model Application {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  url         String
+  iconUrl     String?   @map("icon_url")
+  apiKey      String?   @unique @map("api_key")
+  active      Boolean   @default(true)
+
+  // Auditoria
+  createdAt     DateTime  @default(now()) @map("created_at")
+  createdBy     String?   @map("created_by")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  updatedBy     String?   @map("updated_by")
+  deactivatedAt DateTime? @map("deactivated_at")
+  deactivatedBy String?   @map("deactivated_by")
+
+  // Relacoes
+  companyApplications CompanyApplication[]
+  accessLogs          AccessLog[]
+
+  @@map("applications")
+}
+
+model CompanyApplication {
+  id            String    @id @default(uuid())
+  companyId     String    @map("company_id")
+  applicationId String    @map("application_id")
+  active        Boolean   @default(true)
+  contractedAt  DateTime  @default(now()) @map("contracted_at")
+  expiresAt     DateTime? @map("expires_at")
+
+  // Auditoria
+  createdAt     DateTime  @default(now()) @map("created_at")
+  createdBy     String?   @map("created_by")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  updatedBy     String?   @map("updated_by")
+  deactivatedAt DateTime? @map("deactivated_at")
+  deactivatedBy String?   @map("deactivated_by")
+
+  // Relacoes
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, applicationId])
+  @@map("company_applications")
+}
+
+// ============================================
+// LEADS E CONTATOS
+// ============================================
+
+model ContactRequest {
+  id           String          @id @default(uuid())
+  fullName     String          @map("full_name")
+  email        String
+  phone        String?
+  companyName  String?         @map("company_name")
+  message      String
+  interestedIn String?         @map("interested_in")
+  products     Json?
+
+  // Gestao do lead
+  status      ContactStatus   @default(pending)
+  priority    ContactPriority @default(normal)
+  assignedTo  String?         @map("assigned_to")
+  notes       String?
+  contactedAt DateTime?       @map("contacted_at")
+  convertedAt DateTime?       @map("converted_at")
+
+  // Tracking
+  source      String?
+  utmSource   String?         @map("utm_source")
+  utmMedium   String?         @map("utm_medium")
+  utmCampaign String?         @map("utm_campaign")
+  ipAddress   String?         @map("ip_address")
+  userAgent   String?         @map("user_agent")
+
+  // Auditoria
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  updatedBy String?   @map("updated_by")
+
+  // Relacoes
+  assignedUser User?                @relation("AssignedContacts", fields: [assignedTo], references: [id], onDelete: SetNull)
+  interactions ContactInteraction[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([assignedTo])
+  @@map("contact_requests")
+}
+
+model ContactInteraction {
+  id               String          @id @default(uuid())
+  contactRequestId String          @map("contact_request_id")
+  userId           String?         @map("user_id")
+  interactionType  InteractionType @map("interaction_type")
+  subject          String?
+  description      String
+  nextFollowupAt   DateTime?       @map("next_followup_at")
+  createdAt        DateTime        @default(now()) @map("created_at")
+
+  // Relacoes
+  contactRequest ContactRequest @relation(fields: [contactRequestId], references: [id], onDelete: Cascade)
+  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([contactRequestId])
+  @@index([createdAt])
+  @@map("contact_interactions")
+}
+
+// ============================================
+// LANDING PAGE
+// ============================================
+
+model Product {
+  id               String   @id @default(uuid())
+  name             String
+  slug             String   @unique
+  shortDescription String?  @map("short_description")
+  fullDescription  String?  @map("full_description")
+  features         Json?
+  priceMonthly     Decimal? @map("price_monthly") @db.Decimal(10, 2)
+  priceYearly      Decimal? @map("price_yearly") @db.Decimal(10, 2)
+  imageUrl         String?  @map("image_url")
+  iconUrl          String?  @map("icon_url")
+  displayOrder     Int      @default(0) @map("display_order")
+  isFeatured       Boolean  @default(false) @map("is_featured")
+  active           Boolean  @default(true)
+
+  // Auditoria
+  createdAt     DateTime  @default(now()) @map("created_at")
+  createdBy     String?   @map("created_by")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  updatedBy     String?   @map("updated_by")
+  deactivatedAt DateTime? @map("deactivated_at")
+  deactivatedBy String?   @map("deactivated_by")
+
+  @@map("products")
+}
+
+model LandingContent {
+  id           String   @id @default(uuid())
+  section      String
+  title        String?
+  subtitle     String?
+  content      String?
+  imageUrl     String?  @map("image_url")
+  videoUrl     String?  @map("video_url")
+  buttonText   String?  @map("button_text")
+  buttonLink   String?  @map("button_link")
+  displayOrder Int      @default(0) @map("display_order")
+  active       Boolean  @default(true)
+
+  // Auditoria
+  createdAt     DateTime  @default(now()) @map("created_at")
+  createdBy     String?   @map("created_by")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  updatedBy     String?   @map("updated_by")
+  deactivatedAt DateTime? @map("deactivated_at")
+  deactivatedBy String?   @map("deactivated_by")
+
+  @@unique([section, displayOrder])
+  @@map("landing_content")
+}
+
+model Faq {
+  id           String  @id @default(uuid())
+  question     String
+  answer       String
+  category     String?
+  displayOrder Int     @default(0) @map("display_order")
+  views        Int     @default(0)
+  helpfulCount Int     @default(0) @map("helpful_count")
+  active       Boolean @default(true)
+
+  // Auditoria
+  createdAt     DateTime  @default(now()) @map("created_at")
+  createdBy     String?   @map("created_by")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  updatedBy     String?   @map("updated_by")
+  deactivatedAt DateTime? @map("deactivated_at")
+  deactivatedBy String?   @map("deactivated_by")
+
+  @@map("faq")
+}
+
+model NewsletterSubscriber {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  fullName       String?   @map("full_name")
+  subscribedAt   DateTime  @default(now()) @map("subscribed_at")
+  confirmedAt    DateTime? @map("confirmed_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
+  source         String?
+  active         Boolean   @default(true)
+
+  @@index([email])
+  @@index([subscribedAt])
+  @@map("newsletter_subscribers")
+}
+
+// ============================================
+// TOKENS E LOGS
+// ============================================
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relacoes
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+model AccessLog {
+  id            String   @id @default(uuid())
+  userId        String?  @map("user_id")
+  applicationId String?  @map("application_id")
+  action        String?
+  ipAddress     String?  @map("ip_address")
+  userAgent     String?  @map("user_agent")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relacoes
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("access_logs")
+}
