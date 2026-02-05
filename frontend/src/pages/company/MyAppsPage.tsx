@@ -32,7 +32,8 @@ export default function MyAppsPage() {
         const token = localStorage.getItem('accessToken');
         const url = new URL(response.data.data.url);
         url.searchParams.set('sso_token', token || '');
-        window.open(url.toString(), '_blank');
+        url.searchParams.set('return_url', window.location.href);
+        window.location.href = url.toString();
       }
     } catch (error) {
       toast.error('Erro ao acessar aplicacao');
