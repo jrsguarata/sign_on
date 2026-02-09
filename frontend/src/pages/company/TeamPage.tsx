@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Eye, RotateCcw } from 'lucide-react';
-import { companyApi, User } from '../../api/client';
+import { Plus, Search, Edit, Trash2, Eye, RotateCcw, AppWindow } from 'lucide-react';
+import { companyApi, User, Application } from '../../api/client';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
@@ -28,6 +28,11 @@ export default function TeamPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [saving, setSaving] = useState(false);
+  const [managingAppsUser, setManagingAppsUser] = useState<User | null>(null);
+  const [companyApps, setCompanyApps] = useState<Application[]>([]);
+  const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
+  const [loadingApps, setLoadingApps] = useState(false);
+  const [savingApps, setSavingApps] = useState(false);
 
   const form = useForm<UserForm>();
 
@@ -109,6 +114,44 @@ export default function TeamPage() {
     }
   };
 
+  const openManageApps = async (user: User) => {
+    setManagingAppsUser(user);
+    setLoadingApps(true);
+    try {
+      const [appsResponse, userAppsResponse] = await Promise.all([
+        companyApi.getApplications(),
+        companyApi.getUserApplications(user.id),
+      ]);
+      setCompanyApps(appsResponse.data.data || []);
+      setSelectedAppIds((userAppsResponse.data.data || []).map((a) => a.id));
+    } catch (error) {
+      toast.error('Erro ao carregar aplicacoes');
+      setManagingAppsUser(null);
+    } finally {
+      setLoadingApps(false);
+    }
+  };
+
+  const toggleApp = (appId: string) => {
+    setSelectedAppIds((prev) =>
+      prev.includes(appId) ? prev.filter((id) => id !== appId) : [...prev, appId]
+    );
+  };
+
+  const saveUserApps = async () => {
+    if (!managingAppsUser) return;
+    setSavingApps(true);
+    try {
+      await companyApi.updateUserApplications(managingAppsUser.id, selectedAppIds);
+      toast.success('Aplicacoes atualizadas com sucesso!');
+      setManagingAppsUser(null);
+    } catch (error) {
+      toast.error('Erro ao salvar aplicacoes');
+    } finally {
+      setSavingApps(false);
+    }
+  };
+
   const columns = [
     {
       key: 'fullName',
@@ -151,7 +194,7 @@ export default function TeamPage() {
     {
       key: 'actions',
       header: '',
-      className: 'w-28',
+      className: 'w-40',
       render: (user: User) => (
         <div className="flex gap-1">
           <button
@@ -163,6 +206,13 @@ export default function TeamPage() {
           </button>
           {user.role !== 'COMPANY_ADMIN' && (
             <>
+              <button
+                onClick={() => openManageApps(user)}
+                className="p-2 hover:bg-blue-100 rounded text-blue-600"
+                title="Aplicacoes"
+              >
+                <AppWindow size={16} />
+              </button>
               <button onClick={() => openModal(user)} className="p-2 hover:bg-gray-100 rounded" title="Editar">
                 <Edit size={16} />
               </button>
@@ -253,8 +303,8 @@ export default function TeamPage() {
           <Input label="Telefone" {...form.register('phone')} />
 
           <p className="text-sm text-gray-500">
-            O usuario sera criado como <strong>Operador</strong> e tera acesso apenas as aplicacoes
-            contratadas.
+            O usuario sera criado como <strong>Operador</strong>. Apos a criacao, utilize o botao
+            de <strong>Aplicacoes</strong> para definir quais aplicativos ele tera acesso.
           </p>
 
           <div className="flex gap-3 justify-end pt-4">
@@ -350,6 +400,73 @@ export default function TeamPage() {
               <Button variant="secondary" onClick={() => setViewingUser(null)}>
                 Fechar
               </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal de Gerenciamento de Aplicacoes */}
+      <Modal
+        isOpen={!!managingAppsUser}
+        onClose={() => setManagingAppsUser(null)}
+        title={`Aplicacoes de ${managingAppsUser?.fullName || ''}`}
+      >
+        {managingAppsUser && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Selecione as aplicacoes que este operador tera acesso:
+            </p>
+
+            {loadingApps ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
+                ))}
+              </div>
+            ) : companyApps.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <AppWindow size={32} className="mx-auto mb-2 text-gray-400" />
+                <p>Nenhuma aplicacao contratada pela empresa.</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {companyApps.map((app) => (
+                  <label
+                    key={app.id}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedAppIds.includes(app.id)}
+                      onChange={() => toggleApp(app.id)}
+                      className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 flex-shrink-0">
+                      <AppWindow size={20} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{app.name}</p>
+                      {app.description && (
+                        <p className="text-xs text-gray-500 truncate">{app.description}</p>
+                      )}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-4 border-t">
+              <p className="text-xs text-gray-500">
+                {selectedAppIds.length} de {companyApps.length} selecionadas
+              </p>
+              <div className="flex gap-3">
+                <Button variant="secondary" onClick={() => setManagingAppsUser(null)}>
+                  Cancelar
+                </Button>
+                <Button onClick={saveUserApps} loading={savingApps}>
+                  Salvar
+                </Button>
+              </div>
             </div>
           </div>
         )}

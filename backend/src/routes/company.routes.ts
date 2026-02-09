@@ -6,6 +6,7 @@ import { asyncHandler } from '../middlewares/errorHandler.js';
 import { prisma } from '../config/database.js';
 import { AuthenticatedRequest } from '../types/index.js';
 import { Response } from 'express';
+import { userApplicationsService } from '../services/user-applications.service.js';
 
 const router = Router();
 
@@ -127,6 +128,51 @@ router.get('/applications', asyncHandler(async (req: AuthenticatedRequest, res: 
     success: true,
     data: applications.map((ca) => ca.application),
   });
+}));
+
+// === APLICACOES POR OPERADOR ===
+router.get('/users/:userId/applications', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { userId } = req.params;
+
+  // Verificar que o usuario pertence a mesma empresa
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || user.companyId !== req.user!.companyId) {
+    res.status(403).json({ success: false, error: 'Acesso negado', code: 'FORBIDDEN' });
+    return;
+  }
+
+  if (user.role !== 'COMPANY_OPERATOR') {
+    res.status(400).json({ success: false, error: 'Apenas operadores possuem aplicacoes individuais', code: 'INVALID_ROLE' });
+    return;
+  }
+
+  const applications = await userApplicationsService.listByUser(userId);
+  res.json({ success: true, data: applications });
+}));
+
+router.put('/users/:userId/applications', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { userId } = req.params;
+  const { applicationIds } = req.body;
+
+  if (!Array.isArray(applicationIds)) {
+    res.status(400).json({ success: false, error: 'applicationIds deve ser um array', code: 'INVALID_INPUT' });
+    return;
+  }
+
+  // Verificar que o usuario pertence a mesma empresa
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || user.companyId !== req.user!.companyId) {
+    res.status(403).json({ success: false, error: 'Acesso negado', code: 'FORBIDDEN' });
+    return;
+  }
+
+  if (user.role !== 'COMPANY_OPERATOR') {
+    res.status(400).json({ success: false, error: 'Apenas operadores podem ter aplicacoes atribuidas', code: 'INVALID_ROLE' });
+    return;
+  }
+
+  const applications = await userApplicationsService.syncUserApps(userId, applicationIds, req.user!.sub);
+  res.json({ success: true, data: applications });
 }));
 
 export default router;

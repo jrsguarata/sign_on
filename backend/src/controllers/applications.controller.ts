@@ -99,7 +99,8 @@ export const regenerateApiKey = asyncHandler(async (req: AuthenticatedRequest, r
 export const getAvailable = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const applications = await applicationsService.getAvailableForUser(
     req.user!.sub,
-    req.user!.companyId
+    req.user!.companyId,
+    req.user!.role
   );
 
   res.json({
@@ -115,7 +116,8 @@ export const getAccessUrl = asyncHandler(async (req: AuthenticatedRequest, res: 
   const result = await applicationsService.generateAccessUrl(
     applicationId,
     req.user!.sub,
-    req.user!.companyId
+    req.user!.companyId,
+    req.user!.role
   );
 
   res.json({

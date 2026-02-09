@@ -233,6 +233,12 @@ export const companyApi = {
 
   getApplications: () =>
     api.get<ApiResponse<Application[]>>('/company/applications'),
+
+  getUserApplications: (userId: string) =>
+    api.get<ApiResponse<Application[]>>(`/company/users/${userId}/applications`),
+
+  updateUserApplications: (userId: string, applicationIds: string[]) =>
+    api.put<ApiResponse<Application[]>>(`/company/users/${userId}/applications`, { applicationIds }),
 };
 
 // Apps

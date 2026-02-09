@@ -248,6 +248,21 @@ export class CompaniesService {
       throw new AppError('Vinculo nao encontrado', 404, 'LINK_NOT_FOUND');
     }
 
+    // Remover UserApplications dos usuarios desta empresa para esta aplicacao
+    const companyUsers = await prisma.user.findMany({
+      where: { companyId },
+      select: { id: true },
+    });
+    const userIds = companyUsers.map((u) => u.id);
+    if (userIds.length > 0) {
+      await prisma.userApplication.deleteMany({
+        where: {
+          userId: { in: userIds },
+          applicationId,
+        },
+      });
+    }
+
     return prisma.companyApplication.update({
       where: { id: link.id },
       data: {

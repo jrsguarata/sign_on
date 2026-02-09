@@ -93,6 +93,7 @@ model User {
   accessLogs           AccessLog[]
   contactsAssigned     ContactRequest[]     @relation("AssignedContacts")
   contactInteractions  ContactInteraction[]
+  userApplications     UserApplication[]
 
   @@map("users")
 }
@@ -117,6 +118,7 @@ model Application {
   // Relacoes
   companyApplications CompanyApplication[]
   accessLogs          AccessLog[]
+  userApplications    UserApplication[]
 
   @@map("applications")
 }
@@ -298,6 +300,27 @@ model NewsletterSubscriber {
   @@index([email])
   @@index([subscribedAt])
   @@map("newsletter_subscribers")
+}
+
+// ============================================
+// ACESSO POR USUARIO
+// ============================================
+
+model UserApplication {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  applicationId String   @map("application_id")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  createdBy     String?  @map("created_by")
+
+  // Relacoes
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, applicationId])
+  @@index([userId])
+  @@map("user_applications")
 }
 
 // ============================================

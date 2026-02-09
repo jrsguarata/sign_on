@@ -245,6 +245,22 @@ export class AuthService {
         if (!hasAccess) {
           throw new AppError('Usuario nao tem acesso a esta aplicacao', 403, 'NO_ACCESS');
         }
+
+        // Para operadores, verificar atribuicao individual
+        if (payload.role === 'COMPANY_OPERATOR') {
+          const hasUserAccess = await prisma.userApplication.findUnique({
+            where: {
+              userId_applicationId: {
+                userId: payload.sub,
+                applicationId: application.id,
+              },
+            },
+          });
+
+          if (!hasUserAccess) {
+            throw new AppError('Usuario nao tem acesso a esta aplicacao', 403, 'NO_ACCESS');
+          }
+        }
       }
 
       return {

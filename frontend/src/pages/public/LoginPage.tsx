@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
@@ -21,10 +21,11 @@ export default function LoginPage() {
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
 
   // Redirecionar se ja estiver logado
-  if (user) {
-    navigate(from, { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, from, navigate]);
 
   const {
     register,

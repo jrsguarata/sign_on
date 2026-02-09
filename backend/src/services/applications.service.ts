@@ -169,13 +169,43 @@ export class ApplicationsService {
   }
 
   // Listar aplicacoes disponiveis para um usuario
-  async getAvailableForUser(userId: string, companyId: string | null) {
+  async getAvailableForUser(userId: string, companyId: string | null, role: string) {
     if (!companyId) {
       // SUPER_ADMIN - acesso a todas
       return this.list();
     }
 
-    // Usuario de companhia - apenas aplicacoes contratadas
+    if (role === 'COMPANY_OPERATOR') {
+      // Operador - apenas aplicacoes atribuidas individualmente (que tambem sao contratadas pela empresa)
+      const userApps = await prisma.userApplication.findMany({
+        where: { userId },
+        include: {
+          application: {
+            include: {
+              companyApplications: {
+                where: {
+                  companyId,
+                  active: true,
+                  OR: [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return userApps
+        .filter((ua) => ua.application.active && ua.application.companyApplications.length > 0)
+        .map((ua) => {
+          const { companyApplications, ...app } = ua.application;
+          return app;
+        });
+    }
+
+    // COMPANY_ADMIN - todas as aplicacoes contratadas pela empresa
     const companyApps = await prisma.companyApplication.findMany({
       where: {
         companyId,
@@ -196,7 +226,7 @@ export class ApplicationsService {
   }
 
   // Gerar URL de acesso com token
-  async generateAccessUrl(applicationId: string, userId: string, companyId: string | null) {
+  async generateAccessUrl(applicationId: string, userId: string, companyId: string | null, role: string) {
     const application = await prisma.application.findUnique({
       where: { id: applicationId },
     });
@@ -207,7 +237,7 @@ export class ApplicationsService {
 
     // Verificar se o usuario tem acesso
     if (companyId) {
-      const hasAccess = await prisma.companyApplication.findFirst({
+      const hasCompanyAccess = await prisma.companyApplication.findFirst({
         where: {
           companyId,
           applicationId,
@@ -219,8 +249,21 @@ export class ApplicationsService {
         },
       });
 
-      if (!hasAccess) {
+      if (!hasCompanyAccess) {
         throw new AppError('Usuario nao tem acesso a esta aplicacao', 403, 'NO_ACCESS');
+      }
+
+      // Para operadores, verificar tambem a atribuicao individual
+      if (role === 'COMPANY_OPERATOR') {
+        const hasUserAccess = await prisma.userApplication.findUnique({
+          where: {
+            userId_applicationId: { userId, applicationId },
+          },
+        });
+
+        if (!hasUserAccess) {
+          throw new AppError('Usuario nao tem acesso a esta aplicacao', 403, 'NO_ACCESS');
+        }
       }
     }
 
