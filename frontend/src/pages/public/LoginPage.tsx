@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import Button from '../../components/common/Button';
-import Input from '../../components/common/Input';
 
 interface LoginForm {
   email: string;
@@ -44,95 +42,117 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-block">
-            <h1 className="text-4xl font-bold text-white">SignOn</h1>
-          </Link>
-          <p className="mt-2 text-primary-100">Sistema de Autenticacao Centralizada</p>
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+      {/* Left - Branding */}
+      <div className="relative bg-gradient-to-br from-[#FF8C00] to-[#FF5E00] items-center justify-center p-12 hidden md:flex">
+        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="relative text-center">
+          <div className="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+            <span className="text-white text-5xl font-bold">S</span>
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-2">SignOn</h1>
+          <p className="text-white/90 text-lg">Sistema de Autenticacao Centralizada</p>
         </div>
+      </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
-            Entrar na sua conta
-          </h2>
+      {/* Right - Form */}
+      <div className="flex items-center justify-center p-12 bg-gray-50">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="md:hidden text-center mb-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#FF8C00] to-[#FF5E00] rounded-2xl flex items-center justify-center">
+              <span className="text-white text-3xl font-bold">S</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">SignOn</h1>
+          </div>
+
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Bem-vindo de volta</h2>
+          <p className="text-gray-600 mb-8">Entre com suas credenciais</p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <Input
-              label="Email"
-              type="email"
-              placeholder="seu@email.com"
-              error={errors.email?.message}
-              {...register('email', {
-                required: 'Email e obrigatorio',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Email invalido',
-                },
-              })}
-            />
-
-            <div className="relative">
-              <Input
-                label="Senha"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="********"
-                error={errors.password?.message}
-                {...register('password', {
-                  required: 'Senha e obrigatoria',
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                placeholder="seu@email.com"
+                className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                  errors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-[#FF8C00] focus:border-[#FF8C00]'
+                }`}
+                {...register('email', {
+                  required: 'Email e obrigatorio',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Email invalido',
+                  },
                 })}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Senha</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  className={`w-full px-4 py-3 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all pr-12 ${
+                    errors.password ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-[#FF8C00] focus:border-[#FF8C00]'
+                  }`}
+                  {...register('password', {
+                    required: 'Senha e obrigatoria',
+                  })}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
             </div>
 
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-gray-600">
-                <input type="checkbox" className="rounded" />
-                Lembrar de mim
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 text-[#FF8C00] rounded focus:ring-[#FF8C00]" />
+                <span className="text-sm text-gray-700">Lembrar de mim</span>
               </label>
-              <a href="#" className="text-sm text-primary-600 hover:underline">
+              <button type="button" className="text-[#FF8C00] hover:text-[#E65100] font-medium text-sm transition-colors">
                 Esqueceu a senha?
-              </a>
+              </button>
             </div>
 
-            <Button
+            <button
               type="submit"
-              loading={loading}
-              className="w-full"
-              size="lg"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-[#FF8C00] to-[#FF5E00] text-white py-3 px-6 rounded-full text-sm font-medium hover:shadow-lg hover:shadow-orange-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <LogIn size={20} />
-              Entrar
-            </Button>
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                'Entrar'
+              )}
+            </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Nao tem uma conta?{' '}
-              <Link to="/#contato" className="text-primary-600 hover:underline font-medium">
+              <Link to="/#contato" className="text-[#FF8C00] hover:text-[#E65100] font-medium transition-colors">
                 Entre em contato
               </Link>
             </p>
           </div>
-        </div>
 
-        {/* Voltar */}
-        <div className="text-center mt-6">
-          <Link
-            to="/"
-            className="text-primary-100 hover:text-white transition-colors"
-          >
-            ← Voltar para o site
-          </Link>
+          <div className="text-center mt-6">
+            <Link
+              to="/"
+              className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
+            >
+              ← Voltar para o site
+            </Link>
+          </div>
         </div>
       </div>
     </div>

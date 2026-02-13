@@ -208,7 +208,7 @@ export default function TeamPage() {
             <>
               <button
                 onClick={() => openManageApps(user)}
-                className="p-2 hover:bg-blue-100 rounded text-blue-600"
+                className="p-2 hover:bg-primary-100 rounded text-primary-600"
                 title="Aplicacoes"
               >
                 <AppWindow size={16} />

@@ -30,11 +30,11 @@ export default function Table<T extends { id: string }>({
 }: TableProps<T>) {
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="animate-pulse p-4">
-          <div className="h-10 bg-gray-200 rounded mb-4"></div>
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="animate-pulse p-6">
+          <div className="h-10 bg-gray-200 rounded-xl mb-4"></div>
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-12 bg-gray-100 rounded mb-2"></div>
+            <div key={i} className="h-12 bg-gray-100 rounded-xl mb-2"></div>
           ))}
         </div>
       </div>
@@ -42,7 +42,7 @@ export default function Table<T extends { id: string }>({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50">
@@ -89,7 +89,7 @@ export default function Table<T extends { id: string }>({
 
       {/* Pagination */}
       {pagination && pagination.pages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
           <p className="text-sm text-gray-500">
             Mostrando pagina {pagination.page} de {pagination.pages} ({pagination.total} registros)
           </p>
@@ -97,14 +97,14 @@ export default function Table<T extends { id: string }>({
             <button
               onClick={() => pagination.onPageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft size={20} />
             </button>
             <button
               onClick={() => pagination.onPageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.pages}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight size={20} />
             </button>
