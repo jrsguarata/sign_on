@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Eye, RotateCcw, AppWindow } from 'lucide-react';
-import { companyApi, User, Application } from '../../api/client';
+import { companyApi, User, Application, ApplicationWithRole } from '../../api/client';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
@@ -30,7 +30,7 @@ export default function TeamPage() {
   const [saving, setSaving] = useState(false);
   const [managingAppsUser, setManagingAppsUser] = useState<User | null>(null);
   const [companyApps, setCompanyApps] = useState<Application[]>([]);
-  const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
+  const [selectedApps, setSelectedApps] = useState<Map<string, string>>(new Map());
   const [loadingApps, setLoadingApps] = useState(false);
   const [savingApps, setSavingApps] = useState(false);
 
@@ -123,7 +123,10 @@ export default function TeamPage() {
         companyApi.getUserApplications(user.id),
       ]);
       setCompanyApps(appsResponse.data.data || []);
-      setSelectedAppIds((userAppsResponse.data.data || []).map((a) => a.id));
+      const userApps = (userAppsResponse.data.data || []) as ApplicationWithRole[];
+      const appsMap = new Map<string, string>();
+      userApps.forEach((a) => appsMap.set(a.id, a.appRole || 'COMPANY_OPERATOR'));
+      setSelectedApps(appsMap);
     } catch (error) {
       toast.error('Erro ao carregar aplicacoes');
       setManagingAppsUser(null);
@@ -133,16 +136,34 @@ export default function TeamPage() {
   };
 
   const toggleApp = (appId: string) => {
-    setSelectedAppIds((prev) =>
-      prev.includes(appId) ? prev.filter((id) => id !== appId) : [...prev, appId]
-    );
+    setSelectedApps((prev) => {
+      const next = new Map(prev);
+      if (next.has(appId)) {
+        next.delete(appId);
+      } else {
+        next.set(appId, 'COMPANY_OPERATOR');
+      }
+      return next;
+    });
+  };
+
+  const changeAppRole = (appId: string, role: string) => {
+    setSelectedApps((prev) => {
+      const next = new Map(prev);
+      next.set(appId, role);
+      return next;
+    });
   };
 
   const saveUserApps = async () => {
     if (!managingAppsUser) return;
     setSavingApps(true);
     try {
-      await companyApi.updateUserApplications(managingAppsUser.id, selectedAppIds);
+      const applications = Array.from(selectedApps.entries()).map(([applicationId, role]) => ({
+        applicationId,
+        role,
+      }));
+      await companyApi.updateUserApplications(managingAppsUser.id, applications);
       toast.success('Aplicacoes atualizadas com sucesso!');
       setManagingAppsUser(null);
     } catch (error) {
@@ -173,7 +194,7 @@ export default function TeamPage() {
       header: 'Perfil',
       render: (user: User) => (
         <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-          {user.role === 'COMPANY_ADMIN' ? 'Administrador' : 'Operador'}
+          {{ COMPANY_ADMIN: 'Administrador', COMPANY_COORDINATOR: 'Coordenador', COMPANY_SUPERVISOR: 'Supervisor', COMPANY_OPERATOR: 'Operador' }[user.role] || user.role}
         </span>
       ),
     },
@@ -339,7 +360,7 @@ export default function TeamPage() {
               <div>
                 <p className="text-sm text-gray-500">Perfil</p>
                 <p className="font-medium">
-                  {viewingUser.role === 'COMPANY_ADMIN' ? 'Administrador' : 'Operador'}
+                  {{ COMPANY_ADMIN: 'Administrador', COMPANY_COORDINATOR: 'Coordenador', COMPANY_SUPERVISOR: 'Supervisor', COMPANY_OPERATOR: 'Operador' }[viewingUser.role] || viewingUser.role}
                 </p>
               </div>
               <div>
@@ -414,7 +435,7 @@ export default function TeamPage() {
         {managingAppsUser && (
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Selecione as aplicacoes que este operador tera acesso:
+              Selecione as aplicacoes e o perfil do usuario em cada uma:
             </p>
 
             {loadingApps ? (
@@ -430,34 +451,49 @@ export default function TeamPage() {
               </div>
             ) : (
               <div className="space-y-2 max-h-80 overflow-y-auto">
-                {companyApps.map((app) => (
-                  <label
-                    key={app.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedAppIds.includes(app.id)}
-                      onChange={() => toggleApp(app.id)}
-                      className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                    />
-                    <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 flex-shrink-0">
-                      <AppWindow size={20} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{app.name}</p>
-                      {app.description && (
-                        <p className="text-xs text-gray-500 truncate">{app.description}</p>
+                {companyApps.map((app) => {
+                  const isSelected = selectedApps.has(app.id);
+                  return (
+                    <div
+                      key={app.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${isSelected ? 'border-primary-300 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleApp(app.id)}
+                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 cursor-pointer"
+                      />
+                      <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 flex-shrink-0">
+                        <AppWindow size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{app.name}</p>
+                        {app.description && (
+                          <p className="text-xs text-gray-500 truncate">{app.description}</p>
+                        )}
+                      </div>
+                      {isSelected && (
+                        <select
+                          value={selectedApps.get(app.id) || 'COMPANY_OPERATOR'}
+                          onChange={(e) => changeAppRole(app.id, e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                        >
+                          <option value="COMPANY_OPERATOR">Operador</option>
+                          <option value="COMPANY_COORDINATOR">Coordenador</option>
+                          <option value="COMPANY_SUPERVISOR">Supervisor</option>
+                        </select>
                       )}
                     </div>
-                  </label>
-                ))}
+                  );
+                })}
               </div>
             )}
 
             <div className="flex items-center justify-between pt-4 border-t">
               <p className="text-xs text-gray-500">
-                {selectedAppIds.length} de {companyApps.length} selecionadas
+                {selectedApps.size} de {companyApps.length} selecionadas
               </p>
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={() => setManagingAppsUser(null)}>

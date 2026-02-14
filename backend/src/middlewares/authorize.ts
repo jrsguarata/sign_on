@@ -85,11 +85,11 @@ export function canManageUser(
     return next();
   }
 
-  // COMPANY_ADMIN so pode gerenciar COMPANY_OPERATOR da sua companhia
+  // COMPANY_ADMIN so pode gerenciar COMPANY_OPERATOR, COMPANY_COORDINATOR e COMPANY_SUPERVISOR da sua companhia
   if (req.user.role === 'COMPANY_ADMIN') {
-    if (targetRole && targetRole !== 'COMPANY_OPERATOR') {
+    if (targetRole && targetRole !== 'COMPANY_OPERATOR' && targetRole !== 'COMPANY_COORDINATOR' && targetRole !== 'COMPANY_SUPERVISOR') {
       throw new AppError(
-        'Voce so pode gerenciar operadores',
+        'Voce so pode gerenciar operadores, coordenadores e supervisores',
         403,
         'CANNOT_MANAGE_ROLE'
       );
@@ -97,7 +97,7 @@ export function canManageUser(
     return next();
   }
 
-  // COMPANY_OPERATOR nao pode gerenciar usuarios
+  // COMPANY_OPERATOR, COMPANY_COORDINATOR e COMPANY_SUPERVISOR nao podem gerenciar usuarios
   res.status(403).json({
     success: false,
     error: 'Sem permissao para gerenciar usuarios',

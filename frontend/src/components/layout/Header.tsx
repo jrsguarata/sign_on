@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, User, LogOut, Settings } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import logo from '../../images/logo.png';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -24,11 +25,9 @@ export default function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
         </button>
 
         {/* Logo (mobile) */}
-        <Link to="/dashboard" className="lg:hidden flex items-center gap-2">
-          <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-            <span className="text-white text-sm font-bold">S</span>
-          </div>
-          <span className="font-bold text-lg text-gray-900">SignOn</span>
+        <Link to="/dashboard" className="lg:hidden flex flex-col items-center">
+          <img src={logo} alt="FoX IoT" className="h-7" />
+          <span className="text-[10px] font-semibold text-gray-500">Plataforma SaaS</span>
         </Link>
 
         {/* Spacer */}
@@ -64,14 +63,6 @@ export default function Header({ onMenuToggle, isSidebarOpen }: HeaderProps) {
                 >
                   <User size={16} />
                   Meu Perfil
-                </Link>
-                <Link
-                  to="/dashboard/profile"
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <Settings size={16} />
-                  Configuracoes
                 </Link>
                 <hr className="my-1 border-gray-100" />
                 <button

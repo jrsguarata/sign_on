@@ -20,14 +20,14 @@ export const createUserSchema = z.object({
     if (data.role === 'SUPER_ADMIN' && data.companyId) {
       return false;
     }
-    // COMPANY_ADMIN e COMPANY_OPERATOR devem ter companyId
-    if ((data.role === 'COMPANY_ADMIN' || data.role === 'COMPANY_OPERATOR') && !data.companyId) {
+    // COMPANY_ADMIN, COMPANY_COORDINATOR, COMPANY_SUPERVISOR e COMPANY_OPERATOR devem ter companyId
+    if ((data.role === 'COMPANY_ADMIN' || data.role === 'COMPANY_COORDINATOR' || data.role === 'COMPANY_SUPERVISOR' || data.role === 'COMPANY_OPERATOR') && !data.companyId) {
       return false;
     }
     return true;
   },
   {
-    message: 'SUPER_ADMIN nao deve ter companhia. COMPANY_ADMIN e COMPANY_OPERATOR devem ter companhia.',
+    message: 'SUPER_ADMIN nao deve ter companhia. COMPANY_ADMIN, COMPANY_COORDINATOR, COMPANY_SUPERVISOR e COMPANY_OPERATOR devem ter companhia.',
   }
 );
 

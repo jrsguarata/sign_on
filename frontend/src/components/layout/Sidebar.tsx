@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import logo from '../../images/logo.png';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -20,7 +21,7 @@ interface NavItem {
   label: string;
   icon: React.ReactNode;
   href: string;
-  roles?: ('SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_OPERATOR')[];
+  roles?: ('SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_COORDINATOR' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR')[];
 }
 
 const navItems: NavItem[] = [
@@ -36,13 +37,13 @@ const navItems: NavItem[] = [
     roles: ['SUPER_ADMIN'],
   },
   {
-    label: 'Aplicacoes',
+    label: 'Aplicações',
     icon: <AppWindow size={20} />,
     href: '/dashboard/applications',
     roles: ['SUPER_ADMIN'],
   },
   {
-    label: 'Usuarios',
+    label: 'Usuários',
     icon: <Users size={20} />,
     href: '/dashboard/users',
     roles: ['SUPER_ADMIN'],
@@ -54,10 +55,10 @@ const navItems: NavItem[] = [
     roles: ['SUPER_ADMIN'],
   },
   {
-    label: 'Minhas Aplicacoes',
+    label: 'Minhas Aplicações',
     icon: <Grid3X3 size={20} />,
     href: '/dashboard/my-apps',
-    roles: ['COMPANY_ADMIN', 'COMPANY_OPERATOR'],
+    roles: ['COMPANY_ADMIN', 'COMPANY_COORDINATOR', 'COMPANY_SUPERVISOR', 'COMPANY_OPERATOR'],
   },
   {
     label: 'Equipe',
@@ -100,11 +101,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6">
-            <Link to="/dashboard" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-gray-900 text-lg font-bold">S</span>
-              </div>
-              <span className="text-xl font-bold text-white">SignOn</span>
+            <Link to="/dashboard" className="flex flex-col items-center">
+              <img src={logo} alt="FoX IoT" className="h-7" />
+              <span className="text-[10px] font-semibold text-gray-400 mt-0.5">Plataforma SaaS</span>
             </Link>
             <button
               onClick={onClose}
@@ -139,22 +138,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </ul>
           </nav>
 
-          {/* User info */}
-          <div className="p-4 border-t border-gray-800">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                {user?.fullName?.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">
-                  {user?.fullName}
-                </p>
-                <p className="text-xs text-gray-400 truncate">
-                  {user?.companyName || 'Administrador'}
-                </p>
-              </div>
-            </div>
-          </div>
+
+
         </div>
       </aside>
     </>

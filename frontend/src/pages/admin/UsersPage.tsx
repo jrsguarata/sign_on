@@ -12,7 +12,7 @@ interface UserForm {
   email: string;
   password: string;
   fullName: string;
-  role: string;
+  role: 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_COORDINATOR' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR';
   companyId: string;
   phone: string;
 }
@@ -25,6 +25,8 @@ function formatDate(date?: string) {
 const roleLabels: Record<string, string> = {
   SUPER_ADMIN: 'Super Admin',
   COMPANY_ADMIN: 'Admin Empresa',
+  COMPANY_COORDINATOR: 'Coordenador',
+  COMPANY_SUPERVISOR: 'Supervisor',
   COMPANY_OPERATOR: 'Operador',
 };
 
@@ -236,6 +238,8 @@ export default function UsersPage() {
           <option value="">Todos os perfis</option>
           <option value="SUPER_ADMIN">Super Admin</option>
           <option value="COMPANY_ADMIN">Admin Empresa</option>
+          <option value="COMPANY_COORDINATOR">Coordenador</option>
+          <option value="COMPANY_SUPERVISOR">Supervisor</option>
           <option value="COMPANY_OPERATOR">Operador</option>
         </select>
       </div>
@@ -282,6 +286,8 @@ export default function UsersPage() {
               >
                 <option value="SUPER_ADMIN">Super Admin</option>
                 <option value="COMPANY_ADMIN">Admin Empresa</option>
+                <option value="COMPANY_COORDINATOR">Coordenador</option>
+                <option value="COMPANY_SUPERVISOR">Supervisor</option>
                 <option value="COMPANY_OPERATOR">Operador</option>
               </select>
             </div>
@@ -292,7 +298,7 @@ export default function UsersPage() {
                 <select
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   {...form.register('companyId', {
-                    required: watchRole !== 'SUPER_ADMIN' ? 'Empresa e obrigatoria' : false,
+                    required: 'Empresa e obrigatoria',
                   })}
                 >
                   <option value="">Selecione...</option>

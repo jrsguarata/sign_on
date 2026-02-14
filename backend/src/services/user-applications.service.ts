@@ -1,8 +1,16 @@
 import { prisma } from '../config/database.js';
 import { AppError } from '../middlewares/errorHandler.js';
+import { UserRole } from '@prisma/client';
+
+interface UserAppAssignment {
+  applicationId: string;
+  role: UserRole;
+}
+
+const ALLOWED_APP_ROLES: UserRole[] = ['COMPANY_OPERATOR', 'COMPANY_COORDINATOR', 'COMPANY_SUPERVISOR'];
 
 export class UserApplicationsService {
-  // Listar aplicacoes atribuidas a um usuario
+  // Listar aplicacoes atribuidas a um usuario (com appRole)
   async listByUser(userId: string) {
     const userApps = await prisma.userApplication.findMany({
       where: { userId },
@@ -13,11 +21,14 @@ export class UserApplicationsService {
 
     return userApps
       .filter((ua) => ua.application.active)
-      .map((ua) => ua.application);
+      .map((ua) => ({
+        ...ua.application,
+        appRole: ua.role,
+      }));
   }
 
   // Sincronizar aplicacoes de um usuario (adiciona novas, remove as que nao estao na lista)
-  async syncUserApps(userId: string, applicationIds: string[], adminId: string) {
+  async syncUserApps(userId: string, applications: UserAppAssignment[], adminId: string) {
     // Buscar o usuario para validar empresa
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -27,11 +38,18 @@ export class UserApplicationsService {
       throw new AppError('Usuario nao encontrado', 404, 'USER_NOT_FOUND');
     }
 
-    if (user.role !== 'COMPANY_OPERATOR') {
-      throw new AppError('Apenas operadores podem ter aplicacoes atribuidas individualmente', 400, 'INVALID_ROLE');
+    if (user.role !== 'COMPANY_OPERATOR' && user.role !== 'COMPANY_COORDINATOR' && user.role !== 'COMPANY_SUPERVISOR') {
+      throw new AppError('Apenas operadores, coordenadores e supervisores podem ter aplicacoes atribuidas individualmente', 400, 'INVALID_ROLE');
+    }
+
+    // Validar roles permitidas por app
+    const invalidRoles = applications.filter((a) => !ALLOWED_APP_ROLES.includes(a.role));
+    if (invalidRoles.length > 0) {
+      throw new AppError('Roles invalidas para aplicacao. Permitidas: COMPANY_OPERATOR, COMPANY_COORDINATOR, COMPANY_SUPERVISOR', 400, 'INVALID_APP_ROLE');
     }
 
     // Validar que todas as applicationIds pertencem as CompanyApplications ativas da empresa
+    const applicationIds = applications.map((a) => a.applicationId);
     if (applicationIds.length > 0) {
       const companyApps = await prisma.companyApplication.findMany({
         where: {
@@ -54,12 +72,13 @@ export class UserApplicationsService {
       where: { userId },
     });
 
-    // Criar novas atribuicoes
-    if (applicationIds.length > 0) {
+    // Criar novas atribuicoes com role por app
+    if (applications.length > 0) {
       await prisma.userApplication.createMany({
-        data: applicationIds.map((applicationId) => ({
+        data: applications.map((app) => ({
           userId,
-          applicationId,
+          applicationId: app.applicationId,
+          role: app.role,
           createdBy: adminId,
         })),
       });

@@ -14,6 +14,8 @@ datasource db {
 enum UserRole {
   SUPER_ADMIN
   COMPANY_ADMIN
+  COMPANY_COORDINATOR
+  COMPANY_SUPERVISOR
   COMPANY_OPERATOR
 }
 
@@ -310,6 +312,7 @@ model UserApplication {
   id            String   @id @default(uuid())
   userId        String   @map("user_id")
   applicationId String   @map("application_id")
+  role          UserRole @default(COMPANY_OPERATOR)
 
   createdAt     DateTime @default(now()) @map("created_at")
   createdBy     String?  @map("created_by")

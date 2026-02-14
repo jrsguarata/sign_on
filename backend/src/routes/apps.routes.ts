@@ -11,10 +11,10 @@ router.use(authenticate);
 // Acessivel por qualquer usuario autenticado
 router.get('/available', applicationsController.getAvailable);
 
-// Gerar URL de acesso (apenas COMPANY_ADMIN e COMPANY_OPERATOR)
+// Gerar URL de acesso
 router.post(
   '/access-token',
-  authorize('COMPANY_ADMIN', 'COMPANY_OPERATOR', 'SUPER_ADMIN'),
+  authorize('COMPANY_ADMIN', 'COMPANY_COORDINATOR', 'COMPANY_SUPERVISOR', 'COMPANY_OPERATOR', 'SUPER_ADMIN'),
   applicationsController.getAccessUrl
 );
 

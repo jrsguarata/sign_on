@@ -175,8 +175,8 @@ export class ApplicationsService {
       return this.list();
     }
 
-    if (role === 'COMPANY_OPERATOR') {
-      // Operador - apenas aplicacoes atribuidas individualmente (que tambem sao contratadas pela empresa)
+    if (role === 'COMPANY_OPERATOR' || role === 'COMPANY_COORDINATOR' || role === 'COMPANY_SUPERVISOR') {
+      // Operador/Coordenador/Supervisor - apenas aplicacoes atribuidas individualmente (que tambem sao contratadas pela empresa)
       const userApps = await prisma.userApplication.findMany({
         where: { userId },
         include: {
@@ -253,8 +253,8 @@ export class ApplicationsService {
         throw new AppError('Usuario nao tem acesso a esta aplicacao', 403, 'NO_ACCESS');
       }
 
-      // Para operadores, verificar tambem a atribuicao individual
-      if (role === 'COMPANY_OPERATOR') {
+      // Para operadores, coordenadores e supervisores, verificar tambem a atribuicao individual
+      if (role === 'COMPANY_OPERATOR' || role === 'COMPANY_COORDINATOR' || role === 'COMPANY_SUPERVISOR') {
         const hasUserAccess = await prisma.userApplication.findUnique({
           where: {
             userId_applicationId: { userId, applicationId },

@@ -246,8 +246,8 @@ export class AuthService {
           throw new AppError('Usuario nao tem acesso a esta aplicacao', 403, 'NO_ACCESS');
         }
 
-        // Para operadores, verificar atribuicao individual
-        if (payload.role === 'COMPANY_OPERATOR') {
+        // Para operadores, coordenadores e supervisores, verificar atribuicao individual
+        if (payload.role === 'COMPANY_OPERATOR' || payload.role === 'COMPANY_COORDINATOR' || payload.role === 'COMPANY_SUPERVISOR') {
           const hasUserAccess = await prisma.userApplication.findUnique({
             where: {
               userId_applicationId: {
@@ -263,6 +263,22 @@ export class AuthService {
         }
       }
 
+      // Determinar appRole (perfil do usuario nesta aplicacao)
+      let appRole: string = payload.role;
+      if (payload.companyId) {
+        const userApp = await prisma.userApplication.findUnique({
+          where: {
+            userId_applicationId: {
+              userId: payload.sub,
+              applicationId: application.id,
+            },
+          },
+        });
+        if (userApp) {
+          appRole = userApp.role;
+        }
+      }
+
       return {
         valid: true,
         user: {
@@ -270,6 +286,7 @@ export class AuthService {
           email: payload.email,
           name: payload.name,
           role: payload.role,
+          appRole,
           companyId: payload.companyId,
         },
       };

@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import logo from '../../images/logo.png';
 
 interface LoginForm {
   email: string;
@@ -47,11 +48,8 @@ export default function LoginPage() {
       <div className="relative bg-gradient-to-br from-[#FF8C00] to-[#FF5E00] items-center justify-center p-12 hidden md:flex">
         <div className="absolute inset-0 bg-black/30"></div>
         <div className="relative text-center">
-          <div className="w-24 h-24 mx-auto mb-6 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-            <span className="text-white text-5xl font-bold">S</span>
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-2">SignOn</h1>
-          <p className="text-white/90 text-lg">Sistema de Autenticacao Centralizada</p>
+          <img src={logo} alt="FoX IoT" className="h-24 mx-auto mb-6" />
+          <h1 className="text-4xl font-bold text-white mb-2">Plataforma SaaS</h1>
         </div>
       </div>
 
@@ -60,10 +58,8 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="md:hidden text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#FF8C00] to-[#FF5E00] rounded-2xl flex items-center justify-center">
-              <span className="text-white text-3xl font-bold">S</span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">SignOn</h1>
+            <img src={logo} alt="FoX IoT" className="h-16 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900">Plataforma SaaS</h1>
           </div>
 
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Bem-vindo de volta</h2>

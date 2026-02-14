@@ -57,7 +57,7 @@ function App() {
         <Route path="contacts" element={<PrivateRoute allowedRoles={['SUPER_ADMIN']}><ContactsPage /></PrivateRoute>} />
 
         {/* Rotas Company */}
-        <Route path="my-apps" element={<PrivateRoute allowedRoles={['COMPANY_ADMIN', 'COMPANY_OPERATOR']}><MyAppsPage /></PrivateRoute>} />
+        <Route path="my-apps" element={<PrivateRoute allowedRoles={['COMPANY_ADMIN', 'COMPANY_COORDINATOR', 'COMPANY_SUPERVISOR', 'COMPANY_OPERATOR']}><MyAppsPage /></PrivateRoute>} />
         <Route path="team" element={<PrivateRoute allowedRoles={['COMPANY_ADMIN']}><TeamPage /></PrivateRoute>} />
       </Route>
 

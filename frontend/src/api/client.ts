@@ -235,10 +235,10 @@ export const companyApi = {
     api.get<ApiResponse<Application[]>>('/company/applications'),
 
   getUserApplications: (userId: string) =>
-    api.get<ApiResponse<Application[]>>(`/company/users/${userId}/applications`),
+    api.get<ApiResponse<ApplicationWithRole[]>>(`/company/users/${userId}/applications`),
 
-  updateUserApplications: (userId: string, applicationIds: string[]) =>
-    api.put<ApiResponse<Application[]>>(`/company/users/${userId}/applications`, { applicationIds }),
+  updateUserApplications: (userId: string, applications: { applicationId: string; role: string }[]) =>
+    api.put<ApiResponse<ApplicationWithRole[]>>(`/company/users/${userId}/applications`, { applications }),
 };
 
 // Apps
@@ -255,7 +255,7 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_OPERATOR';
+  role: 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_COORDINATOR' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR';
   phone?: string;
   avatarUrl?: string;
   companyId?: string;
@@ -319,6 +319,10 @@ export interface Application {
   createdByName?: string;
   updatedByName?: string;
   deactivatedByName?: string;
+}
+
+export interface ApplicationWithRole extends Application {
+  appRole: string;
 }
 
 export interface Contact {

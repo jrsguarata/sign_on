@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 
 interface PrivateRouteProps {
   children: ReactNode;
-  allowedRoles?: ('SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_OPERATOR')[];
+  allowedRoles?: ('SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_COORDINATOR' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR')[];
 }
 
 export default function PrivateRoute({ children, allowedRoles }: PrivateRouteProps) {

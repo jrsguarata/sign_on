@@ -130,7 +130,7 @@ router.get('/applications', asyncHandler(async (req: AuthenticatedRequest, res: 
   });
 }));
 
-// === APLICACOES POR OPERADOR ===
+// === APLICACOES POR USUARIO ===
 router.get('/users/:userId/applications', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { userId } = req.params;
 
@@ -141,8 +141,8 @@ router.get('/users/:userId/applications', asyncHandler(async (req: Authenticated
     return;
   }
 
-  if (user.role !== 'COMPANY_OPERATOR') {
-    res.status(400).json({ success: false, error: 'Apenas operadores possuem aplicacoes individuais', code: 'INVALID_ROLE' });
+  if (user.role !== 'COMPANY_OPERATOR' && user.role !== 'COMPANY_COORDINATOR' && user.role !== 'COMPANY_SUPERVISOR') {
+    res.status(400).json({ success: false, error: 'Apenas operadores, coordenadores e supervisores possuem aplicacoes individuais', code: 'INVALID_ROLE' });
     return;
   }
 
@@ -152,10 +152,10 @@ router.get('/users/:userId/applications', asyncHandler(async (req: Authenticated
 
 router.put('/users/:userId/applications', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { userId } = req.params;
-  const { applicationIds } = req.body;
+  const { applications } = req.body;
 
-  if (!Array.isArray(applicationIds)) {
-    res.status(400).json({ success: false, error: 'applicationIds deve ser um array', code: 'INVALID_INPUT' });
+  if (!Array.isArray(applications)) {
+    res.status(400).json({ success: false, error: 'applications deve ser um array de {applicationId, role}', code: 'INVALID_INPUT' });
     return;
   }
 
@@ -166,13 +166,13 @@ router.put('/users/:userId/applications', asyncHandler(async (req: Authenticated
     return;
   }
 
-  if (user.role !== 'COMPANY_OPERATOR') {
-    res.status(400).json({ success: false, error: 'Apenas operadores podem ter aplicacoes atribuidas', code: 'INVALID_ROLE' });
+  if (user.role !== 'COMPANY_OPERATOR' && user.role !== 'COMPANY_COORDINATOR' && user.role !== 'COMPANY_SUPERVISOR') {
+    res.status(400).json({ success: false, error: 'Apenas operadores, coordenadores e supervisores podem ter aplicacoes atribuidas', code: 'INVALID_ROLE' });
     return;
   }
 
-  const applications = await userApplicationsService.syncUserApps(userId, applicationIds, req.user!.sub);
-  res.json({ success: true, data: applications });
+  const result = await userApplicationsService.syncUserApps(userId, applications, req.user!.sub);
+  res.json({ success: true, data: result });
 }));
 
 export default router;
