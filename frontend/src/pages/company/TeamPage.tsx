@@ -194,7 +194,7 @@ export default function TeamPage() {
       header: 'Perfil',
       render: (user: User) => (
         <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-          {{ COMPANY_ADMIN: 'Administrador', COMPANY_COORDINATOR: 'Coordenador', COMPANY_SUPERVISOR: 'Supervisor', COMPANY_OPERATOR: 'Operador' }[user.role] || user.role}
+          {{ COMPANY_ADMIN: 'Administrador', COMPANY_SUPERVISOR: 'Supervisor', COMPANY_OPERATOR: 'Operador' }[user.role] || user.role}
         </span>
       ),
     },
@@ -360,7 +360,7 @@ export default function TeamPage() {
               <div>
                 <p className="text-sm text-gray-500">Perfil</p>
                 <p className="font-medium">
-                  {{ COMPANY_ADMIN: 'Administrador', COMPANY_COORDINATOR: 'Coordenador', COMPANY_SUPERVISOR: 'Supervisor', COMPANY_OPERATOR: 'Operador' }[viewingUser.role] || viewingUser.role}
+                  {{ COMPANY_ADMIN: 'Administrador', COMPANY_SUPERVISOR: 'Supervisor', COMPANY_OPERATOR: 'Operador' }[viewingUser.role] || viewingUser.role}
                 </p>
               </div>
               <div>
@@ -481,7 +481,6 @@ export default function TeamPage() {
                           className="px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
                         >
                           <option value="COMPANY_OPERATOR">Operador</option>
-                          <option value="COMPANY_COORDINATOR">Coordenador</option>
                           <option value="COMPANY_SUPERVISOR">Supervisor</option>
                         </select>
                       )}

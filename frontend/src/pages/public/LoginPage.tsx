@@ -19,6 +19,13 @@ export default function LoginPage() {
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
 
+  // Proteger: so acessivel via landing page
+  useEffect(() => {
+    if (!sessionStorage.getItem('canLogin')) {
+      navigate('/', { replace: true });
+    }
+  }, [navigate]);
+
   // Redirecionar se ja estiver logado
   useEffect(() => {
     if (user) {

@@ -12,7 +12,7 @@ interface UserForm {
   email: string;
   password: string;
   fullName: string;
-  role: 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_COORDINATOR' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR';
+  role: 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR';
   companyId: string;
   phone: string;
 }
@@ -25,7 +25,6 @@ function formatDate(date?: string) {
 const roleLabels: Record<string, string> = {
   SUPER_ADMIN: 'Super Admin',
   COMPANY_ADMIN: 'Admin Empresa',
-  COMPANY_COORDINATOR: 'Coordenador',
   COMPANY_SUPERVISOR: 'Supervisor',
   COMPANY_OPERATOR: 'Operador',
 };
@@ -94,48 +93,48 @@ export default function UsersPage() {
       if (editingUser) {
         const { password, ...updateData } = payload;
         await adminApi.updateUser(editingUser.id, updateData);
-        toast.success('Usuario atualizado com sucesso!');
+        toast.success('Usuário atualizado com sucesso!');
       } else {
         await adminApi.createUser(payload as any);
-        toast.success('Usuario criado com sucesso!');
+        toast.success('Usuário criado com sucesso!');
       }
       setIsModalOpen(false);
       loadData();
     } catch (error) {
-      toast.error('Erro ao salvar usuario');
+      toast.error('Erro ao salvar usuário');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja desativar este usuario?')) return;
+    if (!confirm('Tem certeza que deseja desativar este usuário?')) return;
 
     try {
       await adminApi.deleteUser(id);
-      toast.success('Usuario desativado com sucesso!');
+      toast.success('Usuário desativado com sucesso!');
       loadData();
     } catch (error) {
-      toast.error('Erro ao desativar usuario');
+      toast.error('Erro ao desativar usuário');
     }
   };
 
   const handleReactivate = async (id: string) => {
-    if (!confirm('Tem certeza que deseja reativar este usuario?')) return;
+    if (!confirm('Tem certeza que deseja reativar este usuário?')) return;
 
     try {
       await adminApi.reactivateUser(id);
-      toast.success('Usuario reativado com sucesso!');
+      toast.success('Usuário reativado com sucesso!');
       loadData();
     } catch (error) {
-      toast.error('Erro ao reativar usuario');
+      toast.error('Erro ao reativar usuário');
     }
   };
 
   const columns = [
     {
       key: 'fullName',
-      header: 'Usuario',
+      header: 'Usuário',
       render: (user: UserType) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-medium">
@@ -212,10 +211,10 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Usuarios</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Usuários</h1>
         <Button onClick={() => openModal()}>
           <Plus size={20} />
-          Novo Usuario
+          Novo Usuário
         </Button>
       </div>
 
@@ -224,7 +223,7 @@ export default function UsersPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Buscar usuarios..."
+            placeholder="Buscar usuários..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -238,7 +237,6 @@ export default function UsersPage() {
           <option value="">Todos os perfis</option>
           <option value="SUPER_ADMIN">Super Admin</option>
           <option value="COMPANY_ADMIN">Admin Empresa</option>
-          <option value="COMPANY_COORDINATOR">Coordenador</option>
           <option value="COMPANY_SUPERVISOR">Supervisor</option>
           <option value="COMPANY_OPERATOR">Operador</option>
         </select>
@@ -246,11 +244,11 @@ export default function UsersPage() {
 
       <Table columns={columns} data={users} loading={loading} />
 
-      {/* Modal de Edicao */}
+      {/* Modal de Edição */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingUser ? 'Editar Usuario' : 'Novo Usuario'}
+        title={editingUser ? 'Editar Usuário' : 'Novo Usuário'}
         size="lg"
       >
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -258,13 +256,13 @@ export default function UsersPage() {
             <Input
               label="Nome Completo"
               error={form.formState.errors.fullName?.message}
-              {...form.register('fullName', { required: 'Nome e obrigatorio' })}
+              {...form.register('fullName', { required: 'Nome é obrigatório' })}
             />
             <Input
               label="Email"
               type="email"
               error={form.formState.errors.email?.message}
-              {...form.register('email', { required: 'Email e obrigatorio' })}
+              {...form.register('email', { required: 'Email é obrigatório' })}
             />
           </div>
 
@@ -273,7 +271,7 @@ export default function UsersPage() {
               label="Senha"
               type="password"
               error={form.formState.errors.password?.message}
-              {...form.register('password', { required: !editingUser ? 'Senha e obrigatoria' : false })}
+              {...form.register('password', { required: !editingUser ? 'Senha é obrigatória' : false })}
             />
           )}
 
@@ -286,7 +284,6 @@ export default function UsersPage() {
               >
                 <option value="SUPER_ADMIN">Super Admin</option>
                 <option value="COMPANY_ADMIN">Admin Empresa</option>
-                <option value="COMPANY_COORDINATOR">Coordenador</option>
                 <option value="COMPANY_SUPERVISOR">Supervisor</option>
                 <option value="COMPANY_OPERATOR">Operador</option>
               </select>
@@ -298,7 +295,7 @@ export default function UsersPage() {
                 <select
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   {...form.register('companyId', {
-                    required: 'Empresa e obrigatoria',
+                    required: 'Empresa é obrigatória',
                   })}
                 >
                   <option value="">Selecione...</option>
@@ -325,11 +322,11 @@ export default function UsersPage() {
         </form>
       </Modal>
 
-      {/* Modal de Visualizacao */}
+      {/* Modal de Visualização */}
       <Modal
         isOpen={!!viewingUser}
         onClose={() => setViewingUser(null)}
-        title="Detalhes do Usuario"
+        title="Detalhes do Usuário"
         size="lg"
       >
         {viewingUser && (
@@ -366,13 +363,13 @@ export default function UsersPage() {
                 </span>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Ultimo Login</p>
+                <p className="text-sm text-gray-500">Último Login</p>
                 <p className="font-medium">{formatDate(viewingUser.lastLogin)}</p>
               </div>
             </div>
 
             <div className="border-t pt-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">Informacoes de Auditoria</h4>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Informações de Auditoria</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-gray-500">Criado em</p>

@@ -228,7 +228,7 @@ export const companyApi = {
   getInfo: () =>
     api.get<ApiResponse<Company>>('/company/info'),
 
-  updateInfo: (data: { phone?: string; address?: string }) =>
+  updateInfo: (data: { phone?: string; contact?: string }) =>
     api.put<ApiResponse<Company>>('/company/info', data),
 
   getApplications: () =>
@@ -255,7 +255,7 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_COORDINATOR' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR';
+  role: 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR';
   phone?: string;
   avatarUrl?: string;
   companyId?: string;
@@ -288,7 +288,7 @@ export interface Company {
   cnpj?: string;
   email?: string;
   phone?: string;
-  address?: string;
+  contact?: string;
   logoUrl?: string;
   active: boolean;
   createdAt: string;
@@ -333,8 +333,7 @@ export interface Contact {
   companyName?: string;
   message: string;
   interestedIn?: string;
-  status: 'pending' | 'contacted' | 'converted' | 'archived';
-  priority: 'low' | 'normal' | 'high' | 'urgent';
+  status: 'pending' | 'contacted' | 'archived';
   assignedTo?: string;
   assignedUser?: { id: string; fullName: string; email: string };
   createdAt: string;
@@ -342,7 +341,6 @@ export interface Contact {
   updatedBy?: string;
   updatedByName?: string;
   contactedAt?: string;
-  convertedAt?: string;
 }
 
 export interface CompanyApplication {
@@ -357,10 +355,8 @@ export interface CompanyApplication {
 export interface ContactStats {
   pending: number;
   contacted: number;
-  converted: number;
   archived: number;
   total: number;
-  conversionRate: number;
 }
 
 export interface Product {

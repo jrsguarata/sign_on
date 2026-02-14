@@ -11,9 +11,9 @@ import toast from 'react-hot-toast';
 interface CompanyForm {
   name: string;
   cnpj: string;
+  contact: string;
   email: string;
   phone: string;
-  address: string;
 }
 
 function formatDate(date?: string) {
@@ -60,13 +60,13 @@ export default function CompaniesPage() {
       form.reset({
         name: company.name,
         cnpj: company.cnpj || '',
+        contact: company.contact || '',
         email: company.email || '',
         phone: company.phone || '',
-        address: company.address || '',
       });
     } else {
       setEditingCompany(null);
-      form.reset({ name: '', cnpj: '', email: '', phone: '', address: '' });
+      form.reset({ name: '', cnpj: '', contact: '', email: '', phone: '' });
     }
     setIsModalOpen(true);
   };
@@ -174,6 +174,7 @@ export default function CompaniesPage() {
         </div>
       ),
     },
+    { key: 'contact', header: 'Contato', render: (company: Company) => company.contact || '-' },
     { key: 'email', header: 'Email' },
     { key: 'phone', header: 'Telefone' },
     {
@@ -271,14 +272,32 @@ export default function CompaniesPage() {
       >
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <Input
-            label="Nome"
+            label="Nome *"
             error={form.formState.errors.name?.message}
             {...form.register('name', { required: 'Nome e obrigatorio' })}
           />
-          <Input label="CNPJ" placeholder="00.000.000/0000-00" {...form.register('cnpj')} />
-          <Input label="Email" type="email" {...form.register('email')} />
-          <Input label="Telefone" {...form.register('phone')} />
-          <Input label="Endereco" {...form.register('address')} />
+          <Input
+            label="CNPJ *"
+            placeholder="00.000.000/0000-00"
+            error={form.formState.errors.cnpj?.message}
+            {...form.register('cnpj', { required: 'CNPJ e obrigatorio' })}
+          />
+          <Input
+            label="Contato *"
+            error={form.formState.errors.contact?.message}
+            {...form.register('contact', { required: 'Contato e obrigatorio' })}
+          />
+          <Input
+            label="Email *"
+            type="email"
+            error={form.formState.errors.email?.message}
+            {...form.register('email', { required: 'Email e obrigatorio' })}
+          />
+          <Input
+            label="Telefone *"
+            error={form.formState.errors.phone?.message}
+            {...form.register('phone', { required: 'Telefone e obrigatorio' })}
+          />
 
           <div className="flex gap-3 justify-end pt-4">
             <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
@@ -310,16 +329,16 @@ export default function CompaniesPage() {
                 <p className="font-medium">{viewingCompany.cnpj || '-'}</p>
               </div>
               <div>
+                <p className="text-sm text-gray-500">Contato</p>
+                <p className="font-medium">{viewingCompany.contact || '-'}</p>
+              </div>
+              <div>
                 <p className="text-sm text-gray-500">Email</p>
                 <p className="font-medium">{viewingCompany.email || '-'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Telefone</p>
                 <p className="font-medium">{viewingCompany.phone || '-'}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm text-gray-500">Endereco</p>
-                <p className="font-medium">{viewingCompany.address || '-'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Status</p>

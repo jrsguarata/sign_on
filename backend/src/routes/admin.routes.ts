@@ -50,7 +50,6 @@ router.get('/contacts', contactsController.list);
 router.get('/contacts/stats', contactsController.getStats);
 router.get('/contacts/:id', contactsController.getById);
 router.put('/contacts/:id/status', contactsController.updateStatus);
-router.put('/contacts/:id/priority', contactsController.updatePriority);
 router.put('/contacts/:id/assign', contactsController.assign);
 router.put('/contacts/:id/notes', contactsController.updateNotes);
 router.get('/contacts/:id/interactions', contactsController.getInteractions);

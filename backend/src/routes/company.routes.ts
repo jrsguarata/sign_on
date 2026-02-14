@@ -95,13 +95,13 @@ router.get('/info', asyncHandler(async (req: AuthenticatedRequest, res: Response
 }));
 
 router.put('/info', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const { phone, address } = req.body;
+  const { phone, contact } = req.body;
 
   const company = await prisma.company.update({
     where: { id: req.user!.companyId! },
     data: {
       phone,
-      address,
+      contact,
       updatedBy: req.user!.sub,
     },
   });
@@ -141,8 +141,8 @@ router.get('/users/:userId/applications', asyncHandler(async (req: Authenticated
     return;
   }
 
-  if (user.role !== 'COMPANY_OPERATOR' && user.role !== 'COMPANY_COORDINATOR' && user.role !== 'COMPANY_SUPERVISOR') {
-    res.status(400).json({ success: false, error: 'Apenas operadores, coordenadores e supervisores possuem aplicacoes individuais', code: 'INVALID_ROLE' });
+  if (user.role !== 'COMPANY_OPERATOR' && user.role !== 'COMPANY_SUPERVISOR') {
+    res.status(400).json({ success: false, error: 'Apenas operadores e supervisores possuem aplicacoes individuais', code: 'INVALID_ROLE' });
     return;
   }
 
@@ -166,8 +166,8 @@ router.put('/users/:userId/applications', asyncHandler(async (req: Authenticated
     return;
   }
 
-  if (user.role !== 'COMPANY_OPERATOR' && user.role !== 'COMPANY_COORDINATOR' && user.role !== 'COMPANY_SUPERVISOR') {
-    res.status(400).json({ success: false, error: 'Apenas operadores, coordenadores e supervisores podem ter aplicacoes atribuidas', code: 'INVALID_ROLE' });
+  if (user.role !== 'COMPANY_OPERATOR' && user.role !== 'COMPANY_SUPERVISOR') {
+    res.status(400).json({ success: false, error: 'Apenas operadores e supervisores podem ter aplicacoes atribuidas', code: 'INVALID_ROLE' });
     return;
   }
 

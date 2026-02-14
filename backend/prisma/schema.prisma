@@ -14,7 +14,6 @@ datasource db {
 enum UserRole {
   SUPER_ADMIN
   COMPANY_ADMIN
-  COMPANY_COORDINATOR
   COMPANY_SUPERVISOR
   COMPANY_OPERATOR
 }
@@ -22,15 +21,7 @@ enum UserRole {
 enum ContactStatus {
   pending
   contacted
-  converted
   archived
-}
-
-enum ContactPriority {
-  low
-  normal
-  high
-  urgent
 }
 
 enum InteractionType {
@@ -46,11 +37,11 @@ enum InteractionType {
 
 model Company {
   id            String    @id @default(uuid())
-  name          String
+  name          String    @unique
   cnpj          String?   @unique
   email         String?
   phone         String?
-  address       String?
+  contact       String?
   logoUrl       String?   @map("logo_url")
   active        Boolean   @default(true)
 
@@ -165,11 +156,9 @@ model ContactRequest {
 
   // Gestao do lead
   status      ContactStatus   @default(pending)
-  priority    ContactPriority @default(normal)
   assignedTo  String?         @map("assigned_to")
   notes       String?
   contactedAt DateTime?       @map("contacted_at")
-  convertedAt DateTime?       @map("converted_at")
 
   // Tracking
   source      String?

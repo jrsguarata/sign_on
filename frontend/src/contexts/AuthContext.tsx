@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
+  clearSession: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,9 +22,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   // Carregar usuario do localStorage no inicio
+  // So restaura sessao se houver login nesta sessao do navegador
   useEffect(() => {
     const loadUser = async () => {
       try {
+        if (!sessionStorage.getItem('session_active')) {
+          // Sessao nova: limpar tokens antigos e exigir novo login
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          return;
+        }
+
         const storedUser = localStorage.getItem('user');
         const accessToken = localStorage.getItem('accessToken');
 
@@ -58,6 +68,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('user', JSON.stringify(userData));
+        sessionStorage.setItem('session_active', 'true');
 
         setUser(userData);
         toast.success('Login realizado com sucesso!');
@@ -81,6 +92,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('session_active');
     setUser(null);
 
     try {
@@ -94,6 +106,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     toast.success('Logout realizado com sucesso!');
   }, []);
 
+  const clearSession = useCallback(() => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('session_active');
+    setUser(null);
+  }, []);
+
   const updateUser = useCallback((data: Partial<User>) => {
     setUser((prev) => {
       if (!prev) return prev;
@@ -104,7 +124,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, clearSession }}>
       {children}
     </AuthContext.Provider>
   );

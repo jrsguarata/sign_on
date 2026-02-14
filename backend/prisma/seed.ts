@@ -411,7 +411,6 @@ async function main() {
       interestedIn: 'demo',
       source: 'landing_page',
       status: 'pending' as const,
-      priority: 'high' as const,
     },
     {
       fullName: 'Roberto Lima',
@@ -422,7 +421,6 @@ async function main() {
       interestedIn: 'demo',
       source: 'landing_page',
       status: 'contacted' as const,
-      priority: 'normal' as const,
       contactedAt: new Date(),
     },
     {
@@ -434,7 +432,6 @@ async function main() {
       interestedIn: 'partnership',
       source: 'landing_page',
       status: 'pending' as const,
-      priority: 'urgent' as const,
     },
   ];
 

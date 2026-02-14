@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useAuth } from '../../hooks/useAuth';
 import {
   Menu,
   X,
@@ -52,6 +53,19 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [clientesIndex, setClientesIndex] = useState(0);
+  const { clearSession } = useAuth();
+  const navigate = useNavigate();
+
+  // Limpar sessao ao carregar a landing page (exigir novo login a cada visita)
+  useEffect(() => {
+    clearSession();
+    sessionStorage.removeItem('canLogin');
+  }, [clearSession]);
+
+  const handleLoginClick = () => {
+    sessionStorage.setItem('canLogin', 'true');
+    navigate('/login');
+  };
 
   const parceriasImgs = [
     { src: imgFapergs, alt: 'FAPERGS' },
@@ -157,11 +171,12 @@ export default function LandingPage() {
           </ul>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/login">
-              <button className="px-5 py-2 rounded-full text-sm font-medium text-white border border-gray-600 hover:border-[#FF8C00] hover:text-[#FF8C00] transition-all">
-                Entrar
-              </button>
-            </Link>
+            <button
+              onClick={handleLoginClick}
+              className="px-5 py-2 rounded-full text-sm font-medium text-white border border-gray-600 hover:border-[#FF8C00] hover:text-[#FF8C00] transition-all"
+            >
+              Entrar
+            </button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -185,11 +200,12 @@ export default function LandingPage() {
               <li><a href="#clientes" onClick={() => setIsMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Clientes</a></li>
               <li><a href="#contato" onClick={() => setIsMenuOpen(false)} className="block text-gray-300 hover:text-white py-2">Contato</a></li>
               <li>
-                <Link to="/login" className="block">
-                  <button className="w-full mt-2 px-5 py-2.5 rounded-full text-sm font-medium bg-gradient-to-r from-[#FF8C00] to-[#FF5E00] text-white">
-                    Entrar
-                  </button>
-                </Link>
+                <button
+                  onClick={() => { setIsMenuOpen(false); handleLoginClick(); }}
+                  className="w-full mt-2 px-5 py-2.5 rounded-full text-sm font-medium bg-gradient-to-r from-[#FF8C00] to-[#FF5E00] text-white"
+                >
+                  Entrar
+                </button>
               </li>
             </ul>
           </div>

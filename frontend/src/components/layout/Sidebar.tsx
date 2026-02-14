@@ -21,7 +21,7 @@ interface NavItem {
   label: string;
   icon: React.ReactNode;
   href: string;
-  roles?: ('SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_COORDINATOR' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR')[];
+  roles?: ('SUPER_ADMIN' | 'COMPANY_ADMIN' | 'COMPANY_SUPERVISOR' | 'COMPANY_OPERATOR')[];
 }
 
 const navItems: NavItem[] = [
@@ -58,7 +58,7 @@ const navItems: NavItem[] = [
     label: 'Minhas Aplicações',
     icon: <Grid3X3 size={20} />,
     href: '/dashboard/my-apps',
-    roles: ['COMPANY_ADMIN', 'COMPANY_COORDINATOR', 'COMPANY_SUPERVISOR', 'COMPANY_OPERATOR'],
+    roles: ['COMPANY_ADMIN', 'COMPANY_SUPERVISOR', 'COMPANY_OPERATOR'],
   },
   {
     label: 'Equipe',

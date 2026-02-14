@@ -7,7 +7,7 @@ import {
 } from '../schemas/contact.schema.js';
 import { parsePagination, calculatePages, resolveAuditUsers } from '../utils/helpers.js';
 import { ContactFilters, PaginatedResponse, ContactStats } from '../types/index.js';
-import { ContactRequest, ContactStatus, ContactPriority } from '@prisma/client';
+import { ContactRequest, ContactStatus } from '@prisma/client';
 
 export class ContactsService {
   // Listar contatos/leads
@@ -28,10 +28,6 @@ export class ContactsService {
       where.assignedTo = filters.assignedTo === 'unassigned' ? null : filters.assignedTo;
     }
 
-    if (filters.priority) {
-      where.priority = filters.priority as ContactPriority;
-    }
-
     if (filters.search) {
       where.OR = [
         { fullName: { contains: filters.search, mode: 'insensitive' } },
@@ -45,10 +41,7 @@ export class ContactsService {
         where,
         skip: pagination.skip,
         take: pagination.limit,
-        orderBy: [
-          { priority: 'desc' },
-          { createdAt: 'desc' },
-        ],
+        orderBy: { createdAt: 'desc' },
         include: {
           assignedUser: {
             select: {
@@ -137,30 +130,9 @@ export class ContactsService {
       updateData.contactedAt = new Date();
     }
 
-    if (input.status === 'converted' && !contact.convertedAt) {
-      updateData.convertedAt = new Date();
-    }
-
     return prisma.contactRequest.update({
       where: { id },
       data: updateData,
-    });
-  }
-
-  // Atualizar prioridade
-  async updatePriority(id: string, priority: ContactPriority, userId: string) {
-    const contact = await prisma.contactRequest.findUnique({ where: { id } });
-
-    if (!contact) {
-      throw new AppError('Contato nao encontrado', 404, 'CONTACT_NOT_FOUND');
-    }
-
-    return prisma.contactRequest.update({
-      where: { id },
-      data: {
-        priority,
-        updatedBy: userId,
-      },
     });
   }
 
@@ -280,23 +252,18 @@ export class ContactsService {
 
   // Obter estatisticas
   async getStats(): Promise<ContactStats> {
-    const [pending, contacted, converted, archived, total] = await Promise.all([
+    const [pending, contacted, archived, total] = await Promise.all([
       prisma.contactRequest.count({ where: { status: 'pending' } }),
       prisma.contactRequest.count({ where: { status: 'contacted' } }),
-      prisma.contactRequest.count({ where: { status: 'converted' } }),
       prisma.contactRequest.count({ where: { status: 'archived' } }),
       prisma.contactRequest.count(),
     ]);
 
-    const conversionRate = total > 0 ? (converted / total) * 100 : 0;
-
     return {
       pending,
       contacted,
-      converted,
       archived,
       total,
-      conversionRate: Math.round(conversionRate * 100) / 100,
     };
   }
 }

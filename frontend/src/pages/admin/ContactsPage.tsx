@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Mail, User, Clock, CheckCircle, Archive } from 'lucide-react';
+import { Search, Mail, Clock, Archive } from 'lucide-react';
 import { adminApi, Contact, ContactStats } from '../../api/client';
 import Button from '../../components/common/Button';
 import Table from '../../components/common/Table';
@@ -8,15 +8,7 @@ import toast from 'react-hot-toast';
 const statusColors = {
   pending: 'bg-yellow-100 text-yellow-700',
   contacted: 'bg-blue-100 text-blue-700',
-  converted: 'bg-green-100 text-green-700',
   archived: 'bg-gray-100 text-gray-700',
-};
-
-const priorityColors = {
-  low: 'bg-gray-100 text-gray-600',
-  normal: 'bg-blue-100 text-blue-600',
-  high: 'bg-orange-100 text-orange-600',
-  urgent: 'bg-red-100 text-red-600',
 };
 
 export default function ContactsPage() {
@@ -76,15 +68,6 @@ export default function ContactsPage() {
       render: (contact: Contact) => contact.interestedIn || '-',
     },
     {
-      key: 'priority',
-      header: 'Prioridade',
-      render: (contact: Contact) => (
-        <span className={`px-2 py-1 rounded text-xs font-medium ${priorityColors[contact.priority]}`}>
-          {contact.priority}
-        </span>
-      ),
-    },
-    {
       key: 'status',
       header: 'Status',
       render: (contact: Contact) => (
@@ -112,15 +95,6 @@ export default function ContactsPage() {
               <Clock size={16} />
             </button>
           )}
-          {contact.status === 'contacted' && (
-            <button
-              onClick={() => updateStatus(contact.id, 'converted')}
-              className="p-1 hover:bg-green-100 rounded text-green-600"
-              title="Marcar como convertido"
-            >
-              <CheckCircle size={16} />
-            </button>
-          )}
           <button
             onClick={() => updateStatus(contact.id, 'archived')}
             className="p-1 hover:bg-gray-100 rounded text-gray-600"
@@ -146,12 +120,11 @@ export default function ContactsPage() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard label="Pendentes" value={stats.pending} color="yellow" />
           <StatCard label="Em Andamento" value={stats.contacted} color="blue" />
-          <StatCard label="Convertidos" value={stats.converted} color="green" />
           <StatCard label="Arquivados" value={stats.archived} color="gray" />
-          <StatCard label="Taxa Conversao" value={`${stats.conversionRate}%`} color="purple" />
+          <StatCard label="Total" value={stats.total} color="purple" />
         </div>
       )}
 
@@ -175,7 +148,6 @@ export default function ContactsPage() {
           <option value="">Todos os status</option>
           <option value="pending">Pendentes</option>
           <option value="contacted">Em Andamento</option>
-          <option value="converted">Convertidos</option>
           <option value="archived">Arquivados</option>
         </select>
       </div>
@@ -202,12 +174,6 @@ export default function ContactsPage() {
                     {selectedContact.status}
                   </span>
                 </p>
-                <p>
-                  <strong>Prioridade:</strong>{' '}
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${priorityColors[selectedContact.priority]}`}>
-                    {selectedContact.priority}
-                  </span>
-                </p>
                 <div>
                   <strong>Mensagem:</strong>
                   <p className="mt-1 p-3 bg-gray-50 rounded">{selectedContact.message}</p>
@@ -215,7 +181,7 @@ export default function ContactsPage() {
               </div>
 
               <div className="border-t mt-4 pt-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Informacoes de Auditoria</h4>
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Informações de Auditoria</h4>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <p className="text-gray-500">Criado em</p>
@@ -235,12 +201,6 @@ export default function ContactsPage() {
                     <div>
                       <p className="text-gray-500">Contatado em</p>
                       <p>{new Date(selectedContact.contactedAt).toLocaleString('pt-BR')}</p>
-                    </div>
-                  )}
-                  {selectedContact.convertedAt && (
-                    <div>
-                      <p className="text-gray-500">Convertido em</p>
-                      <p>{new Date(selectedContact.convertedAt).toLocaleString('pt-BR')}</p>
                     </div>
                   )}
                   {selectedContact.assignedUser && (

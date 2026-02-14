@@ -71,7 +71,12 @@ export class UsersService {
       prisma.user.count({ where }),
     ]);
 
-    const enriched = await resolveAuditUsers(users as any[]);
+    const withCompanyName = users.map(({ company, ...user }) => ({
+      ...user,
+      companyName: company?.name || null,
+    }));
+
+    const enriched = await resolveAuditUsers(withCompanyName as any[]);
 
     return {
       data: enriched as unknown as UserWithoutPassword[],
@@ -115,7 +120,10 @@ export class UsersService {
       throw new AppError('Usuario nao encontrado', 404, 'USER_NOT_FOUND');
     }
 
-    return await resolveAuditUser(user as any) as unknown as UserWithoutPassword;
+    const { company, ...userData } = user;
+    const withCompanyName = { ...userData, companyName: company?.name || null };
+
+    return await resolveAuditUser(withCompanyName as any) as unknown as UserWithoutPassword;
   }
 
   // Criar usuario

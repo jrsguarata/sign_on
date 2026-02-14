@@ -4,7 +4,6 @@ import { AuthenticatedRequest } from '../types/index.js';
 import {
   createContactSchema,
   updateContactStatusSchema,
-  updateContactPrioritySchema,
   assignContactSchema,
   updateContactNotesSchema,
   createInteractionSchema,
@@ -12,12 +11,11 @@ import {
 import { asyncHandler } from '../middlewares/errorHandler.js';
 
 export const list = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const { status, assignedTo, priority, search, page, limit } = req.query;
+  const { status, assignedTo, search, page, limit } = req.query;
 
   const filters = {
     status: status as string | undefined,
     assignedTo: assignedTo as string | undefined,
-    priority: priority as string | undefined,
     search: search as string | undefined,
   };
 
@@ -61,17 +59,6 @@ export const updateStatus = asyncHandler(async (req: AuthenticatedRequest, res: 
   const { id } = req.params;
   const input = updateContactStatusSchema.parse(req.body);
   const contact = await contactsService.updateStatus(id, input, req.user!.sub);
-
-  res.json({
-    success: true,
-    data: contact,
-  });
-});
-
-export const updatePriority = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const { id } = req.params;
-  const { priority } = updateContactPrioritySchema.parse(req.body);
-  const contact = await contactsService.updatePriority(id, priority, req.user!.sub);
 
   res.json({
     success: true,

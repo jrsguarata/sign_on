@@ -81,7 +81,6 @@ export interface CompanyFilters {
 export interface ContactFilters {
   status?: string;
   assignedTo?: string;
-  priority?: string;
   search?: string;
 }
 
@@ -92,10 +91,8 @@ export interface ContactFilters {
 export interface ContactStats {
   pending: number;
   contacted: number;
-  converted: number;
   archived: number;
   total: number;
-  conversionRate: number;
 }
 
 export interface DashboardStats {

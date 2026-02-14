@@ -7,7 +7,7 @@ interface UserAppAssignment {
   role: UserRole;
 }
 
-const ALLOWED_APP_ROLES: UserRole[] = ['COMPANY_OPERATOR', 'COMPANY_COORDINATOR', 'COMPANY_SUPERVISOR'];
+const ALLOWED_APP_ROLES: UserRole[] = ['COMPANY_OPERATOR', 'COMPANY_SUPERVISOR'];
 
 export class UserApplicationsService {
   // Listar aplicacoes atribuidas a um usuario (com appRole)
@@ -38,14 +38,14 @@ export class UserApplicationsService {
       throw new AppError('Usuario nao encontrado', 404, 'USER_NOT_FOUND');
     }
 
-    if (user.role !== 'COMPANY_OPERATOR' && user.role !== 'COMPANY_COORDINATOR' && user.role !== 'COMPANY_SUPERVISOR') {
-      throw new AppError('Apenas operadores, coordenadores e supervisores podem ter aplicacoes atribuidas individualmente', 400, 'INVALID_ROLE');
+    if (user.role !== 'COMPANY_OPERATOR' && user.role !== 'COMPANY_SUPERVISOR') {
+      throw new AppError('Apenas operadores e supervisores podem ter aplicacoes atribuidas individualmente', 400, 'INVALID_ROLE');
     }
 
     // Validar roles permitidas por app
     const invalidRoles = applications.filter((a) => !ALLOWED_APP_ROLES.includes(a.role));
     if (invalidRoles.length > 0) {
-      throw new AppError('Roles invalidas para aplicacao. Permitidas: COMPANY_OPERATOR, COMPANY_COORDINATOR, COMPANY_SUPERVISOR', 400, 'INVALID_APP_ROLE');
+      throw new AppError('Roles invalidas para aplicacao. Permitidas: COMPANY_OPERATOR, COMPANY_SUPERVISOR', 400, 'INVALID_APP_ROLE');
     }
 
     // Validar que todas as applicationIds pertencem as CompanyApplications ativas da empresa

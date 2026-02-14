@@ -60,8 +60,8 @@ export default function DashboardPage() {
     ? [
         { label: 'Leads Pendentes', value: stats.pending, icon: <Mail />, color: 'bg-yellow-500' },
         { label: 'Em Andamento', value: stats.contacted, icon: <Clock />, color: 'bg-blue-500' },
-        { label: 'Convertidos', value: stats.converted, icon: <TrendingUp />, color: 'bg-green-500' },
-        { label: 'Taxa de Conversao', value: `${stats.conversionRate}%`, icon: <TrendingUp />, color: 'bg-purple-500' },
+        { label: 'Arquivados', value: stats.archived, icon: <Mail />, color: 'bg-gray-500' },
+        { label: 'Total', value: stats.total, icon: <TrendingUp />, color: 'bg-purple-500' },
       ]
     : [];
 

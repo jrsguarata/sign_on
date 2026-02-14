@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ContactStatus, ContactPriority, InteractionType } from '@prisma/client';
+import { ContactStatus, InteractionType } from '@prisma/client';
 
 export const createContactSchema = z.object({
   fullName: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -19,10 +19,6 @@ export const updateContactStatusSchema = z.object({
   status: z.nativeEnum(ContactStatus),
 });
 
-export const updateContactPrioritySchema = z.object({
-  priority: z.nativeEnum(ContactPriority),
-});
-
 export const assignContactSchema = z.object({
   userId: z.string().uuid('ID do usuario invalido').nullable(),
 });
@@ -40,7 +36,6 @@ export const createInteractionSchema = z.object({
 
 export type CreateContactInput = z.infer<typeof createContactSchema>;
 export type UpdateContactStatusInput = z.infer<typeof updateContactStatusSchema>;
-export type UpdateContactPriorityInput = z.infer<typeof updateContactPrioritySchema>;
 export type AssignContactInput = z.infer<typeof assignContactSchema>;
 export type UpdateContactNotesInput = z.infer<typeof updateContactNotesSchema>;
 export type CreateInteractionInput = z.infer<typeof createInteractionSchema>;
